@@ -1,5 +1,6 @@
 plugins {
-    id 'java-library'
+    id 'java'
+    id "io.freefair.lombok" version "6.0.0-m2"
 }
 
 group 'org.example'
@@ -14,20 +15,16 @@ def restAssuredVersion = "5.3.0",
 
 dependencies {
     testImplementation (
-            "io.rest-assured:rest-assured:$restAssuredVersion",
-            "io.rest-assured:json-schema-validator:$restAssuredVersion",
-            "org.junit.jupiter:junit-jupiter:5.9.2",
-            "org.slf4j:slf4j-simple:$slf4jVersion"
+            "io.rest-assured:rest-assured:5.3.0",
+            "io.rest-assured:json-schema-validator:5.3.0",
+            "org.aeonbits.owner:owner:1.0.12",
+            "com.fasterxml.jackson.core:jackson-databind:2.15.0",
+            "org.junit.jupiter:junit-jupiter-api:5.9.3",
+            "org.junit.jupiter:junit-jupiter-engine:5.9.3",
+            "org.junit.jupiter:junit-jupiter-params:5.9.3"
     )
 }
 
-tasks.withType(Test) {
+test {
     useJUnitPlatform()
-
-    testLogging {
-        lifecycle {
-            events "started", "skipped", "failed", "standard_error", "standard_out"
-            exceptionFormat "short"
-        }
-    }
 }

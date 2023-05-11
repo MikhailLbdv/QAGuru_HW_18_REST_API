@@ -1,31 +1,32 @@
-package hw18_reqres.in;
+package hw18_lombok;
 
+import models.UserData;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import static hw18_lombok.Specs.*;
 import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
 import static io.restassured.module.jsv.JsonSchemaValidator.matchesJsonSchemaInClasspath;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class ReqresInTestsHW {
+public class ReqresInTestsHWLombok {
 
     @Test
     @DisplayName("Проверка успешного создания пользователя")
-    void testPostCreate() {
+    void testPostCreateLombok() {
         String body = "{ \"name\": \"Testovui\", \"job\": \"QA\" }";
 
         given()
-                .log().uri()
+                .spec(request)
                 .body(body)
-                .contentType(JSON)
                 .when()
-                .post("https://reqres.in/api/users")
+                .post("/users")
                 .then()
-                .log().status()
-                .log().body()
-                .statusCode(201)
+                .log().all()
+                .spec(responseSpec201)
                 .body("name", is("Testovui"))
                 .body("job", is("QA"))
                 .body("id", is(notNullValue()))
@@ -34,95 +35,92 @@ public class ReqresInTestsHW {
 
     @Test
     @DisplayName("Проверка успешного удаления")
-    void testDelete() {
+    void testDeleteLombok() {
         given()
-                .log().uri()
+                .spec(request)
                 .when()
-                .delete("https://reqres.in/api/users/2")
+                .delete("/users/2")
                 .then()
-                .log().status()
-                .log().body()
-                .statusCode(204);
+                .log().all()
+                .spec(responseSpec204);
     }
 
     @Test
     @DisplayName("Проверка успешного редактирования пользователя")
-    void testPutUpdate() {
+    void testPutUpdateLombok() {
         String body = "{ \"name\": \"TestovuiTest\", \"job\": \"QA Automation\" }";
 
         given()
-                .log().uri()
+                .spec(request)
                 .body(body)
-                .contentType(JSON)
                 .when()
-                .put("https://reqres.in/api/users/2")
+                .put("/users/2")
                 .then()
-                .log().status()
-                .log().body()
-                .statusCode(200)
+                .log().all()
+                .spec(responseSpec200)
                 .body("name", is("TestovuiTest"))
                 .body("job", is("QA Automation"))
                 .body("updatedAt", is(notNullValue()));
     }
 
+
     @Test
     @DisplayName("Проверка, что пользователь не найден")
-    void testSingleUserNotFound() {
+    void testSingleUserNotFoundLombok() {
         given()
-                .log().uri()
-                .contentType(JSON)
+                .spec(request)
                 .when()
-                .get("https://reqres.in/api/users/23")
+                .get("/users/23")
                 .then()
-                .log().status()
-                .log().body()
-                .statusCode(404)
+                .log().all()
+                .spec(responseSpec404)
                 .body(is("{}"));
     }
 
     @Test
     @DisplayName("Проверка JsonScheme")  //https://www.liquid-technologies.com/online-json-to-schema-converter
-    void testSingleResource() {
+    void testSingleResourceLombok() {
         given()
-                .log().uri()
-                .contentType(JSON)
+                .spec(request)
                 .when()
-                .get("https://reqres.in/api/unknown/2")
+                .get("/unknown/2")
                 .then()
-                .log().status()
-                .log().body()
-                .statusCode(200)
+                .log().all()
+                .spec(responseSpec200)
                 .body(matchesJsonSchemaInClasspath("schemes/hw-jsonscheme-responce.json"));
     }
 
     @Test
-    @DisplayName("Проверка StatusCode при отправке некорректного запроса без body")
-    void unSuccessTestPostCreate2() {
-        given()
-                .log().uri()
-                .when()
-                .post("https://reqres.in/api/users")
-                .then()
-                .log().status()
-                .log().body()
-                .statusCode(415);
-    }
-
-    @Test
     @DisplayName("Проверка нудачной регистрации")
-    void testRegisterUnsuccessful() {
+    void testRegisterUnsuccessfulLombok() {
         String body = "{ \"email\": \"incorrectemail@\" }";
 
         given()
-                .log().uri()
+                .spec(request)
                 .body(body)
-                .contentType(JSON)
                 .when()
-                .post("https://reqres.in/api/register")
+                .post("/register")
                 .then()
-                .log().status()
-                .log().body()
-                .statusCode(400)
+                .log().all()
+                .spec(responseSpec400)
                 .body("error", is("Missing password"));
+    }
+
+    @Test
+    @DisplayName("Проверка получения корректных данных по определенному пользователю")
+    void testSingleUserLombok() {
+        UserData data = Specs.request
+                .spec(request)
+                .when()
+                .get("/users/7")
+                .then()
+                .log().all()
+                .spec(responseSpec200)
+                .extract().as(models.UserData.class);
+
+        assertEquals(7, data.getUser().getId());
+        assertEquals("michael.lawson@reqres.in", data.getUser().getEmail());
+        assertEquals("Michael", data.getUser().getFirstName());
+        assertEquals("Lawson", data.getUser().getLastName());
     }
 }
