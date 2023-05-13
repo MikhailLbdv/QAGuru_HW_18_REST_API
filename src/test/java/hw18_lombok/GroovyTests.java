@@ -3,7 +3,6 @@ package hw18_lombok;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import static hw18_lombok.Specs.*;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.*;
 
